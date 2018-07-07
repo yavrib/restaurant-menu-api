@@ -1,69 +1,74 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import findAll from '../utils/findAll';
-import find from '../utils/find';
-
-const Items = [
-  {
-    restaurantId: 1,
-    menuId: 2,
-    id: 1,
-    name: 'chicken wings',
-  },
-  {
-    restaurantId: 1,
-    menuId: 2,
-    id: 2,
-    name: 'chicken breast'
-  },
-  {
-    restaurantId: 1,
-    menuId: 1,
-    id: 1,
-    name: 'chicken with chick-a chick-a'
-  },
-  {
-    restaurantId: 2,
-    menuId: 1,
-    id: 1,
-    name: 'the speaking goat (ram-say pun)'
-  },
-  {
-    restaurantId: 2,
-    menuId: 1,
-    id: 2,
-    name: 'tears of his enemies'
-  }
-];
+import ItemService from '../services/ItemService';
+import MenuService from '../services/MenuService';
+import RestaurantService from '../services/RestaurantService';
 
 class ItemRouter {
   router: Router
+  itemService: ItemService
 
-  constructor() {
+  constructor(itemService: ItemService) {
     this.router = Router();
+    this.itemService = itemService;
     this.init();
   }
 
   init() {
     this.router.get('/:restaurantId/menus/:menuId/items', (req, res, next) => {
-      const itemsOfRestaurant = findAll(Items, req.params.restaurantId, 'restaurantId');
-      const itemsOfMenu = findAll(itemsOfRestaurant, req.params.menuId, 'menuId');
-      res.json([...itemsOfMenu]);
+      const { error, data } = this.itemService.getAll(req.params.menuId, req.params.restaurantId);
+
+      res.json({
+        error,
+        data
+      });
     });
 
     this.router.get('/:restaurantId/menus/:menuId/items/:id', (req, res, next) => {
-      const itemsOfRestaurant = findAll(Items, req.params.restaurantId, 'restaurantId');
-      const itemsOfMenu = findAll(itemsOfRestaurant, req.params.menuId, 'menuId');
-      const item = find(itemsOfMenu, req.params.id, 'id');
+      const { error, data } = this.itemService.getOne(req.params.id, req.params.menuId, req.params.restaurantId);
 
       res.json({
-        ...item
+        error,
+        data
+      });
+    });
+
+    this.router.post('/:restaurantId/menus/:menuId/items', (req, res, next) => {
+      const { error, data } = this.itemService.create(req.body, req.params.menuId, req.params.restaurantId);
+
+      res.json({
+        error,
+        data
+      });
+    });
+
+    this.router.put('/:restaurantId/menus/:menuId/items/:id', (req, res, next) => {
+      const { error, data } = this.itemService.update(req.params.id, req.body, req.params.menuId, req.params.restaurantId);
+
+      res.json({
+        error,
+        data
+      });
+    });
+
+    this.router.delete('/:restaurantId/menus/:menuId/items/:id', (req, res, next) => {
+      const { error, data } = this.itemService.remove(req.params.id, req.params.menuId, req.params.restaurantId);
+
+      res.json({
+        error,
+        data
       });
     });
   }
 }
 
-const menuRouter = new ItemRouter();
+const menuRouter = new ItemRouter(
+  new ItemService(
+    new MenuService(
+      new RestaurantService()
+    )
+  )
+);
 menuRouter.init();
 
 export default menuRouter.router;

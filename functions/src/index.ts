@@ -7,5 +7,4 @@ import App from './App';
 // This should be just as easy as firebase-functions
 // if I decide to change it to AWS Lambda.
 
-// Update this as v1 so that you have api versioning.
-export const api = functions.https.onRequest(App);
+export const v1 = functions.https.onRequest(App);

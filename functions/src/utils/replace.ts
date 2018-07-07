@@ -2,7 +2,7 @@ const replaceFirstEncounter = (tail, query, attributes, newObject, head = []) =>
   const [ first, ...rest ] = tail;
 
   if (!first) {
-    return;
+    return head;
   }
 
   const value = attributes.reduce((obj, attribute) => {

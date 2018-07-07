@@ -7,6 +7,7 @@ import find from '../utils/find';
 import isEmpty from '../utils/isEmpty';
 import Result from '../utils/result';
 import replace from '../utils/replace';
+import findRest from '../utils/findRest';
 
 let Menus: Array<Menu> = [
   {
@@ -87,9 +88,12 @@ class MenuService implements BaseService<Menu> {
     // because this project will never actually support and authorization layer.
     if (restaurantData.id !== newMenu.restaurantId) return new Result(null, 'Restaurant id and payload restaurant id mismatch');
 
+    // This is also getting out of hand. Send Halp
     const menusOfRestaurant = findAll(Menus, restaurantId, 'restaurantId');
+    const newMenusOfRestaurant = replace(menusOfRestaurant, id, 'id', newMenu)
+    const restOfMenus = findRest(Menus, restaurantId, 'restaurantId');
 
-    Menus = [ ...Menus, ...replace(menusOfRestaurant, id, 'id', newMenu) ]
+    Menus = [ ...restOfMenus, ...newMenusOfRestaurant ];
 
     return new Result(newMenu, null);
   }
@@ -103,9 +107,10 @@ class MenuService implements BaseService<Menu> {
 
     let result = new Result(null, 'Menu does not exits');
     const menusOfRestaurant = findAll(Menus, restaurantId, 'restaurantId');
+    const restOfMenus = findRest(Menus, restaurantId, 'restaurantId');
 
     Menus = [
-      ...Menus,
+      ...restOfMenus,
       ...menusOfRestaurant.filter(menu => {
         if ((menu.id.toString() === id)) {
           result = new Result(menu, null)
