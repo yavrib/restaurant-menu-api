@@ -1,41 +1,66 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import find from '../utils/find';
-
-const Restaurants = [
-  {
-    id: 1,
-    name: 'Los Pollos Hermanos'
-  },
-  {
-    id: 2,
-    name: 'Hell\'s Kitchen'
-  }
-]
+import RestaurantService from '../services/RestaurantService';
 
 class RestaurantRouter {
   router: Router
+  restaurantService: RestaurantService
 
-  constructor() {
+  constructor(restaurantService: RestaurantService) {
     this.router = Router();
+    this.restaurantService = restaurantService;
     this.init();
   }
 
   init() {
     this.router.get('/', (req, res, next) => {
-      res.json([...Restaurants])
+      const { error, data } = this.restaurantService.getAll();
+
+      res.json({
+        error,
+        data
+      });
+    });
+
+    this.router.post('/', (req, res, next) => {
+      const { error, data } = this.restaurantService.create(req.body);
+
+      res.json({
+        error,
+        data
+      });
+    });
+
+    this.router.put('/:id', (req, res, next) => {
+      const { error, data } = this.restaurantService.update(req.params.id, req.body);
+
+      res.json({
+        error,
+        data
+      });
+    });
+
+    this.router.delete('/:id', (req, res, next) => {
+      const { error, data } = this.restaurantService.remove(req.params.id);
+
+      res.json({
+        error,
+        data
+      });
     });
 
     this.router.get('/:id', (req, res, next) => {
-      const restaurant = find(Restaurants, req.params.id, 'id')
+      const { error, data } = this.restaurantService.getOne(req.params.id);
+
       res.json({
-        ...restaurant
-      })
+        error,
+        data
+      });
     });
   }
 }
 
-const restaurantRouter = new RestaurantRouter();
+const restaurantRouter = new RestaurantRouter(new RestaurantService());
 restaurantRouter.init();
 
 export default restaurantRouter.router;
